@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: simple-httpd
+  namespace: openshift-gitops
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: hub
+        url: https://api.hub.azure.elostech.cz:6443
+     - cluster: remote
+        url: https://api.remote.azure.elostech.cz:6443
+  template:
+    metadata:
+      name: '{{cluster}}-simple-httpd'
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      source:
+        repoURL: https://github.com/lukas-miksicek/simple-httpd.git
+        targetRevision: applicationset
+        path: applicationsets/list-generator/overlays/{{cluster}}
+      destination:
+        server: '{{url}}'
+        namespace: simple-httpd-as
